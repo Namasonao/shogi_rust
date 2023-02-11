@@ -64,6 +64,11 @@ impl GameState {
             letter += 1;
         }
         println!("");
+        if self.white_turn {
+            println!("{} to move", "WHITE".white());
+        } else {
+            println!("{} to move", "BLUE".bright_blue());
+        }
     }
 }
 

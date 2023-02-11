@@ -9,7 +9,8 @@ pub mod input;
 fn main() {
     let mut gs: GameState = GameState::start_state();
     gs.white_hand.push(Piece::Hi);
-    show_moves((2,0), &gs);
+    show_moves((1,0), &gs);
+    show_moves((1,8), &gs);
     play(gs);
 
 }

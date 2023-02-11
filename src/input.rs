@@ -7,6 +7,9 @@ pub fn read_move() -> Result<Move, String> {
    stdin.read_line(&mut line).expect("Failed to read line");
 
    let splits: Vec<&str> = line.split_whitespace().collect();
+   if splits.len() == 0 {
+        return Err("No input".to_string());
+   }
 
    match splits[0].as_bytes()[0] as char {
        'm' => match parse_move(splits) {

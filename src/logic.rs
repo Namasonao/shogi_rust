@@ -102,11 +102,23 @@ pub struct MoveIdentifier {
 
 impl MoveIdentifier {
     pub fn is_legal(&self, gs: &GameState) -> bool {
+        let f_s = gs.filledness(self.start);
+        if f_s == 0 || (f_s == 1 && !gs.white_turn) || (f_s == -1 && gs.white_turn) {
+            return false;
+        }
+        let f_e = gs.filledness(self.end);
+        if f_e == 0 || (f_e == 1 && !gs.white_turn) || (f_e == -1 && gs.white_turn) {
+            self.reachable(gs)
+        } else {
+            false
+        }
+    }
+    fn reachable(&self, gs: &GameState) -> bool {
         let start_cell = gs.board[self.start.1][self.start.0];
         match start_cell {
             Cell::Empty => false,
             Cell::Fill(piece, white) => { //NOT FINISHED!!!
-                // if gs.white_turn != white { return false }
+                let pattern = piece.move_pattern();
                 let mut i = 0;
                 for y in 0..3 {
                     for x in 0..3 {
@@ -122,10 +134,46 @@ impl MoveIdentifier {
                         let cur_x = cur_x - 1;
                         let cur_y = cur_y - 1;
 
-                        if within_bounds(x, y) {
-                            if cur_x == self.end.0 && cur_y == self.end.1 {
-                                let actual_i = if white {7 - i} else {i};
-                                return piece.move_pattern()[actual_i] == Pattern::Yes;
+                        if !within_bounds(cur_x, cur_y) {
+                            i += 1;
+                            continue;
+                        }
+                        if cur_x == self.end.0 && cur_y == self.end.1 {
+                            let actual_i = if white {7 - i} else {i};
+                            return pattern[actual_i] == Pattern::Yes;
+                        }
+
+                        let actual_i = if white {7 - i} else {i};
+                        match pattern[actual_i] {
+                            Pattern::Yes => if cur_x == self.end.0 && cur_y == self.end.1 {
+                                return true;
+                            },
+
+                            Pattern::No => (),
+                            Pattern::Far => {
+
+                            },
+                            Pattern::Horse => {
+                                if white {
+                                    let horse_y = cur_y + 1;
+                                    if !within_bounds(cur_x, horse_y) {
+                                        break;
+                                    }
+                                    if cur_x == self.end.0 && horse_y == self.end.1 {
+                                        return true;
+                                    }
+                                } else {
+                                    if cur_y == 0 {
+                                        break;
+                                    }
+                                    let horse_y = cur_y - 1;
+                                    if !within_bounds(cur_x, horse_y) {
+                                        break;
+                                    }
+                                    if cur_x == self.end.0 && horse_y == self.end.1 {
+                                        return true;
+                                    }
+                                }
                             }
                         }
 
@@ -232,6 +280,19 @@ impl GameState {
         }
 
         gs
+    }
+
+    /// pre: x,y within bounds
+    /// post:
+    /// 1 = white
+    /// 0 = empty
+    /// -1 = blue
+    pub fn filledness(&self, pos: (usize, usize)) -> i8 {
+        match self.board[pos.1][pos.0] {
+            Cell::Empty => 0,
+            Cell::Fill(_, true) => 1,
+            Cell::Fill(_, false) => -1,
+        }
     }
     
     /// pre: m is a legal move
