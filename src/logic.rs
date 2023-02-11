@@ -78,6 +78,10 @@ pub enum Move {
     Move(MoveIdentifier),
 }
 impl Move {
+    /// pre: sensible place move (position in bound)
+    /// post: true if no rules are violated
+    /// todo: uchifuzume (drop pawn mate is illegal)
+    /// and a lot of moves
     pub fn is_legal(&self, gs: &GameState) -> bool {
         match self {
             Move::Place(p) => p.is_legal(gs),
@@ -102,25 +106,26 @@ impl MoveIdentifier {
         match start_cell {
             Cell::Empty => false,
             Cell::Fill(piece, white) => { //NOT FINISHED!!!
+                // if gs.white_turn != white { return false }
                 let mut i = 0;
                 for y in 0..3 {
                     for x in 0..3 {
-                        if x == 0 && y == 0 {
+                        if x == 1 && y == 1 {
                             continue;
                         }
                         let cur_x = self.start.0 + x;
-                        if cur_x == 0 {
+                        let cur_y = self.start.1 + y;
+                        if cur_x == 0 || cur_y == 0 {
+                            i += 1;
                             continue;
                         }
                         let cur_x = cur_x - 1;
-                        let cur_y = self.start.1 + y;
-                        if cur_y == 0 {
-                            continue;
-                        }
                         let cur_y = cur_y - 1;
+
                         if within_bounds(x, y) {
                             if cur_x == self.end.0 && cur_y == self.end.1 {
-                                return piece.move_pattern()[i] == Pattern::Yes;
+                                let actual_i = if white {7 - i} else {i};
+                                return piece.move_pattern()[actual_i] == Pattern::Yes;
                             }
                         }
 
@@ -140,8 +145,19 @@ impl PlaceIdentifier {
             false => &gs.blue_hand,
         };
         if self.index >= hand.len() {
-            println!("Too big");
             return false;
+        }
+
+        if let Piece::Fu = hand[self.index] {
+            // Check File for existing pawn
+            let x = self.end.0;
+            for y in 0..9 {
+                if let Cell::Fill(Piece::Fu, b) = gs.board[y][x] {
+                    if b == gs.white_turn {
+                        return false;
+                    }
+                }
+            }
         }
         match gs.board[self.end.1][self.end.0] {
             Cell::Empty => true,
