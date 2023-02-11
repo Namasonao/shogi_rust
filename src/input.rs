@@ -30,11 +30,11 @@ fn parse_move(splits: Vec<&str>) -> Result<MoveIdentifier, String> {
        Err(err) => return Err(err.to_string()),
    };
    let start_y = match splits[2].parse::<usize>() {
-       Ok(val) => from_coordinate_x(val)?,
+       Ok(val) => from_coordinate_y(val)?,
        Err(err) => return Err(err.to_string()),
    };
    let end_x = match splits[3].parse::<usize>() {
-       Ok(val) => from_coordinate_y(val)?,
+       Ok(val) => from_coordinate_x(val)?,
        Err(err) => return Err(err.to_string()),
    };
    let end_y = match splits[4].parse::<usize>() {
