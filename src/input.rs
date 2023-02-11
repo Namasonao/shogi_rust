@@ -26,19 +26,19 @@ fn parse_move(splits: Vec<&str>) -> Result<MoveIdentifier, String> {
         return Err("Not enough inputs".to_string());
     }
    let start_x = match splits[1].parse::<usize>() {
-       Ok(val) => from_coordinate(val)?,
+       Ok(val) => from_coordinate_x(val)?,
        Err(err) => return Err(err.to_string()),
    };
    let start_y = match splits[2].parse::<usize>() {
-       Ok(val) => from_coordinate(val)?,
+       Ok(val) => from_coordinate_x(val)?,
        Err(err) => return Err(err.to_string()),
    };
    let end_x = match splits[3].parse::<usize>() {
-       Ok(val) => from_coordinate(val)?,
+       Ok(val) => from_coordinate_y(val)?,
        Err(err) => return Err(err.to_string()),
    };
    let end_y = match splits[4].parse::<usize>() {
-       Ok(val) => from_coordinate(val)?,
+       Ok(val) => from_coordinate_y(val)?,
        Err(err) => return Err(err.to_string()),
    };
 
@@ -74,9 +74,15 @@ fn parse_place(splits: Vec<&str>) -> Result<PlaceIdentifier, String> {
    })
 }
 
-fn from_coordinate(p: usize) -> Result<usize, String> {
+fn from_coordinate_x(p: usize) -> Result<usize, String> {
     if p > 9 || p < 1 {
         return Err("Out of bounds".to_string());
     }
     return Ok(9 - p);
+}
+fn from_coordinate_y(p: usize) -> Result<usize, String> {
+    if p > 9 || p < 1 {
+        return Err("Out of bounds".to_string());
+    }
+    return Ok(p + 1);
 }
